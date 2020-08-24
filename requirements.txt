@@ -1,5 +1,5 @@
 kfp-server-api==1.0.
-kfp>=0.1.31'
+kfp>=0.1.31
 xgboost==0.81
 numpy==1.16.4
 pandas==0.24.0
