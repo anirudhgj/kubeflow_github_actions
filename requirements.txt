@@ -1,1 +1,2 @@
-kfp==0.2
+kfp==1.0.0
+kfp-server-api==1.0.0
