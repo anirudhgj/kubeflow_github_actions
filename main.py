@@ -58,6 +58,8 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
+    logging.info("Defining client")
+
     client = kfp.Client(
         host=kubeflow_url,
         client_id=None,
@@ -189,7 +191,7 @@ def main():
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
                              kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'],
-                             client_id=os.environ["INPUT_CLIENT_ID"])
+                             client_id=None)
     logging.info(os.getenv("INPUT_RUN_PIPELINE"))
     logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
     if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
