@@ -51,7 +51,7 @@ def pipeline_compile(pipeline_function: object) -> str:
     return pipeline_name_zip
 
 
-def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str, client_id: str):
+def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str):
     """Function to upload pipeline to kubeflow. 
 
     Arguments:
@@ -59,9 +59,7 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
     client = kfp.Client(
-        host=kubeflow_url,
-        client_id=None,
-    )
+        host=kubeflow_url)
     logging.info("client defined")
     logging.info(client.list_pipelines())
     client.upload_pipeline(
@@ -191,8 +189,7 @@ def main():
         "_" + os.environ["GITHUB_SHA"]
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
-                             kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'],
-                             client_id=None)
+                             kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
     logging.info(os.getenv("INPUT_RUN_PIPELINE"))
     logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
     if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
