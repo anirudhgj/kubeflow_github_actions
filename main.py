@@ -174,34 +174,52 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
 
 
 def main():
+#     logging.info(
+#         "Started the process to compile and upload the pipeline to kubeflow.")
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["INPUT_GOOGLE_APPLICATION_CREDENTIALS"]
+#     pipeline_function = load_function(pipeline_function_name=os.environ['INPUT_PIPELINE_FUNCTION_NAME'],
+#                                       full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
+#     logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(
+#         os.environ["INPUT_VERSION_GITHUB_SHA"]))
+#     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
+#         logging.info("Versioned pipeline components")
+#         pipeline_function = pipeline_function(
+#             github_sha=os.environ["GITHUB_SHA"])
+#     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
+#     pipeline_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME'] + \
+#         "_" + os.environ["GITHUB_SHA"]
+#     logging.info(pipeline_name)
+#     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
+#                              pipeline_name=pipeline_name,
+#                              kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
+#     logging.info(os.getenv("INPUT_RUN_PIPELINE"))
+#     logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
+#     if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
+#         logging.info("Started the process to run the pipeline on kubeflow.")
+#         pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
+#                                        client=client)
+#         run_pipeline(pipeline_name=pipeline_name,
+#                      pipeline_id=pipeline_id,
+#                      client=client,
+#                      pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"])
+
     logging.info(
         "Started the process to compile and upload the pipeline to kubeflow.")
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["INPUT_GOOGLE_APPLICATION_CREDENTIALS"]
     pipeline_function = load_function(pipeline_function_name=os.environ['INPUT_PIPELINE_FUNCTION_NAME'],
                                       full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
-    logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(
-        os.environ["INPUT_VERSION_GITHUB_SHA"]))
-    if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
-        logging.info("Versioned pipeline components")
-        pipeline_function = pipeline_function(
-            github_sha=os.environ["GITHUB_SHA"])
+
+#     logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(
+#         os.environ["INPUT_VERSION_GITHUB_SHA"]))
+#     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
+#         logging.info("Versioned pipeline components")
+    pipeline_function = pipeline_function(
+        github_sha='697e11f2318dae210d15936435c3a061767d73bc')
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
-    pipeline_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME'] + \
-        "_" + os.environ["GITHUB_SHA"]
-    logging.info(pipeline_name)
+    pipeline_name = 'pipeline' + "_" + '697e11f2318dae210d15936435c3a061767d73bc'
+
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
-                             kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
-    logging.info(os.getenv("INPUT_RUN_PIPELINE"))
-    logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
-    if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
-        logging.info("Started the process to run the pipeline on kubeflow.")
-        pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
-                                       client=client)
-        run_pipeline(pipeline_name=pipeline_name,
-                     pipeline_id=pipeline_id,
-                     client=client,
-                     pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"])
+                             kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com')
 
 
 if __name__ == "__main__":
