@@ -63,7 +63,7 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         client_id=None,
     )
     logging.info("client defined")
-    
+    logging.info(client.list_pipelines())
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
         pipeline_name=pipeline_name)
