@@ -10,4 +10,6 @@ RUN chmod +x /entrypoint.sh
 
 RUN  pip install -r requirements.txt
 
+RUN pip freeze
+
 ENTRYPOINT ["/entrypoint.sh"]
