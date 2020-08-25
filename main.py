@@ -182,7 +182,8 @@ def main():
     pipeline_name = 'pipeline' + "_" + '697e11f2318dae210d15936435c3a061767d73bc'
     
     print (os.system("ls /tmp/"))
-
+    os.system("gcloud auth activate-service-account dien-dev@zozo-pf-recommend-dev.iam.gserviceaccount.com --key-file=/tmp/gcloud-sa.json --project=zozo-pf-recommend-dev")
+              
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
                              kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com',
