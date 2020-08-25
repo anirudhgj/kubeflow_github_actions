@@ -1,13 +1,13 @@
 name: Manage Kubeflow Pipelines on GCP. 
 description: Build, deploy and run a Kubeflow Pipeline on Google Cloud Platform.
-author: Niklas Hansson
+author: Anirudh G J
 inputs:
   KUBEFLOW_URL:
     description: The endpoint where your Kubeflow UI is running. 
     required: true
   CLIENT_ID:
     description: The IAP client id, which was specified when the kubeflow deployment where setup using IAP.
-    require: true
+    require: False
   PIPELINE_CODE_PATH:
     description: The full path name including the filename of the python file that describes the pipeline you want to run on Kubeflow.  This should be relative to the root of the GitHub repository where the Action is triggered.
     require: true
@@ -32,6 +32,7 @@ inputs:
   VERSION_GITHUB_SHA: 
     description: Should github action also trigger the pipeline
     required: false
+    
 outputs:
   WORKFLOW_URL:
     description: URL that is a link to pipeline in Kubeflow
