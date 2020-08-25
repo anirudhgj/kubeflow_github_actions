@@ -180,13 +180,15 @@ def main():
         github_sha='697e11f2318dae210d15936435c3a061767d73bc')
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
     pipeline_name = 'pipeline' + "_" + '697e11f2318dae210d15936435c3a061767d73bc'
+    
+    print (os.system("ls /tmp/"))
 
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
                              kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com',
                              client_id=None)
 
-
+      
     # pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
     #                                client=client)
     
