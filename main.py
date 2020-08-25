@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 
 
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
@@ -51,23 +52,22 @@ def pipeline_compile(pipeline_function: object) -> str:
     return pipeline_name_zip
 
 
-def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str):
+def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str, client_id: str):
     """Function to upload pipeline to kubeflow. 
 
     Arguments:
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
-    logging.info("client defined")
     client = kfp.Client(
-        host=kubeflow_url)
-    logging.info("client defined")
-    logging.info(client.list_pipelines())
+        host=kubeflow_url,
+        client_id=None,
+    )
+    print ("haha")
+    
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
         pipeline_name=pipeline_name)
-    
-    logging.info("uploaded")    
     return client
 
 
@@ -144,7 +144,7 @@ def read_pipeline_params(pipeline_paramters_path: str) -> dict:
 
 def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipeline_paramters_path: dict):
     experiment_id = find_experiment_id(
-        experiment_name=os.environ["INPUT_EXPERIMENT_NAME"], client=client)
+        experiment_name='Default', client=client)
     if not experiment_id:
         raise ValueError("Failed to find experiment with the name: {}".format(
             os.environ["INPUT_EXPERIMENT_NAME"]))
@@ -167,51 +167,18 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
         job_name=job_name,
         # Read this as a yaml, people seam to prefer that to json.
         params=pipeline_params,
-        pipeline_id=pipeline_id,
-        namespace=namespace)
+        pipeline_id=pipeline_id)
     logging.info(
         "Successfully started the pipeline, head over to kubeflow to check it out")
 
 
-def main():
-#     logging.info(
-#         "Started the process to compile and upload the pipeline to kubeflow.")
-#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["INPUT_GOOGLE_APPLICATION_CREDENTIALS"]
-#     pipeline_function = load_function(pipeline_function_name=os.environ['INPUT_PIPELINE_FUNCTION_NAME'],
-#                                       full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
-#     logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(
-#         os.environ["INPUT_VERSION_GITHUB_SHA"]))
-#     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
-#         logging.info("Versioned pipeline components")
-#         pipeline_function = pipeline_function(
-#             github_sha=os.environ["GITHUB_SHA"])
-#     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
-#     pipeline_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME'] + \
-#         "_" + os.environ["GITHUB_SHA"]
-#     logging.info(pipeline_name)
-#     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
-#                              pipeline_name=pipeline_name,
-#                              kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
-#     logging.info(os.getenv("INPUT_RUN_PIPELINE"))
-#     logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
-#     if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
-#         logging.info("Started the process to run the pipeline on kubeflow.")
-#         pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
-#                                        client=client)
-#         run_pipeline(pipeline_name=pipeline_name,
-#                      pipeline_id=pipeline_id,
-#                      client=client,
-#                      pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"])
 
+def main():
     logging.info(
         "Started the process to compile and upload the pipeline to kubeflow.")
-    pipeline_function = load_function(pipeline_function_name=os.environ['INPUT_PIPELINE_FUNCTION_NAME'],
-                                      full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
+    pipeline_function = load_function(pipeline_function_name='pipeline',
+                                      full_path_to_pipeline='projects/dien/kubeflow_pipeline/src/pipelines/pipeline.py')
 
-#     logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(
-#         os.environ["INPUT_VERSION_GITHUB_SHA"]))
-#     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
-#         logging.info("Versioned pipeline components")
     pipeline_function = pipeline_function(
         github_sha='697e11f2318dae210d15936435c3a061767d73bc')
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
@@ -219,8 +186,12 @@ def main():
 
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
-                             kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com')
+                             kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com',
+                             client_id=None)
 
 
+    # pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
+    #                                client=client)
+    
 if __name__ == "__main__":
     main()
