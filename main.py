@@ -59,10 +59,7 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
-    client = kfp.Client(
-        host=kubeflow_url,
-        client_id=None,
-    )
+    client = kfp.Client(host=kubeflow_url)
     print ("haha")
     
     client.upload_pipeline(
