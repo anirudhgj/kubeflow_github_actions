@@ -61,7 +61,7 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
     client = kfp.Client(host=kubeflow_url)
-    print (client.list_pipelines())
+
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
         pipeline_name=pipeline_name)
