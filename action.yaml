@@ -11,6 +11,9 @@ inputs:
   PIPELINE_CODE_PATH:
     description: The full path name including the filename of the python file that describes the pipeline you want to run on Kubeflow.  This should be relative to the root of the GitHub repository where the Action is triggered.
     require: true
+  PIPELINE_PARAMETERS_PATH:
+    description: Full path name including the filename of the parameters yaml file that contains the parameters for the kublefow pipeline
+    require: true
   PIPELINE_FUNCTION_NAME:
     description: The name of the pipeline, this name will be the name of the pipeline in the Kubeflow UI.
     require: true
