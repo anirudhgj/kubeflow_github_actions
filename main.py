@@ -6,6 +6,7 @@ import click
 import importlib.util
 import logging
 import sys
+import json 
 from datetime import datetime
 
 
@@ -52,7 +53,7 @@ def pipeline_compile(pipeline_function: object) -> str:
     return pipeline_name_zip
 
 
-def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str, client_id: str):
+def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str):
     """Function to upload pipeline to kubeflow. 
 
     Arguments:
@@ -60,7 +61,6 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
     client = kfp.Client(host=kubeflow_url)
-    print ("haha")
     print (client.list_pipelines())
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
@@ -171,27 +171,51 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
 
 
 def main():
-    logging.info(
-        "Started the process to compile and upload the pipeline to kubeflow.")
-    pipeline_function = load_function(pipeline_function_name='pipeline',
-                                      full_path_to_pipeline='projects/dien/kubeflow_pipeline/src/pipelines/pipeline.py')
 
-    pipeline_function = pipeline_function(
-        github_sha='697e11f2318dae210d15936435c3a061767d73bc')
-    pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
-    pipeline_name = 'pipeline' + "_" + '697e11f2318dae210d15936435c3a061767d73bc'
-    
+    logging.info("Started the process to compile and upload the pipeline to kubeflow.")
+    logging.info("Authenticating") 
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["INPUT_GOOGLE_APPLICATION_CREDENTIALS"]
+
     print (os.system("ls /tmp/"))
-    os.system("gcloud auth activate-service-account dien-dev@zozo-pf-recommend-dev.iam.gserviceaccount.com --key-file=/tmp/gcloud-sa.json --project=zozo-pf-recommend-dev")
-    print ("done")
+
+    print (os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
+
+    with open(os.environ["GOOGLE_APPLICATION_CREDENTIALS"]) as f:
+        sa_details = json.load(f)
+
+    os.system("gcloud auth activate-service-account {} --key-file={} --project={}".format(sa_details['client_email'],
+                                                                                          os.environ["GOOGLE_APPLICATION_CREDENTIALS"],
+                                                                                          sa_details['project_id']))
+
+    pipeline_function = load_function(pipeline_function_name=os.environ['INPUT_PIPELINE_FUNCTION_NAME'],
+                                      full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
+
+    logging.info("The value of the VERSION_GITHUB_SHA is: {}".format(os.environ["INPUT_VERSION_GITHUB_SHA"]))
+
+    if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
+        logging.info("Versioned pipeline components")
+        pipeline_function = pipeline_function(github_sha=os.environ["GITHUB_SHA"])
+
+    pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
+    pipeline_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME'] + "_" + os.environ["GITHUB_SHA"]
+
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
-                             kubeflow_url='301560d77e3d412-dot-us-central2.pipelines.googleusercontent.com',
-                             client_id=None)
+                             kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
 
-      
-    # pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
-    #                                client=client)
+    logging.info(os.getenv("INPUT_RUN_PIPELINE"))
+    logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
+
+    if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
+        logging.info("Started the process to run the pipeline on kubeflow.")
+
+        pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
+                                       client=client)
+
+        run_pipeline(pipeline_name=pipeline_name,
+                     pipeline_id=pipeline_id,
+                     client=client,
+                     pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"])
     
 if __name__ == "__main__":
     main()
