@@ -225,7 +225,7 @@ def main():
                      client=client,
                      pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"],
                      recurring_flag = os.environ['INPUT_RUN_RECURRING_PIPELINE'],
-                     cron_exp = os.environ['CRON_EXPRESSION'])
+                     cron_exp = os.environ['INPUT_CRON_EXPRESSION'])
         
     
 if __name__ == "__main__":
