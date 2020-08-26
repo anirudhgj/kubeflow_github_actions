@@ -2,12 +2,11 @@ name: Manage Kubeflow Pipelines on GCP.
 description: Build, deploy and run a Kubeflow Pipeline on Google Cloud Platform.
 author: Anirudh G J
 inputs:
-  CRON_EXPRESSION:
+  CRON_STRING:
     description: CRON string for scheduling recurring pipelines
     required: false
   RUN_RECURRING_PIPELINE:
-    description: Flag for running recurring pipelines
-    required: true
+    description: Flag for running recurring pipeline
   KUBEFLOW_URL:
     description: The endpoint where your Kubeflow UI is running. 
     required: true

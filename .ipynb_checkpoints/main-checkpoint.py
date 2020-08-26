@@ -61,7 +61,7 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
     client = kfp.Client(host=kubeflow_url)
-    print (client.list_pipelines())
+
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
         pipeline_name=pipeline_name)
@@ -139,7 +139,9 @@ def read_pipeline_params(pipeline_paramters_path: str) -> dict:
     return pipeline_params
 
 
-def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipeline_paramters_path: dict):
+def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipeline_paramters_path: dict, recurring_flag :bool, cron_exp : str):
+
+    
     experiment_id = find_experiment_id(
         experiment_name='Default', client=client)
     if not experiment_id:
@@ -150,7 +152,6 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
     if (os.getenv("INPUT_PIPELINE_NAMESPACE") != None) and (str.isspace(os.getenv("INPUT_PIPELINE_NAMESPACE")) == False) and os.getenv("INPUT_PIPELINE_NAMESPACE"):
         namespace = os.environ["INPUT_PIPELINE_NAMESPACE"]
         logging.info(f"The namespace that will be used is: {namespace}")
-    # [TODO] What would be a good way to name the jobs
     job_name = pipeline_name + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     logging.info(f"The job name is: {job_name}")
 
@@ -159,24 +160,31 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
     pipeline_params = pipeline_params if pipeline_params != None else {}
     logging.info(
         f"experiment_id: {experiment_id}, job_name:{job_name}, pipeline_params:{pipeline_params}, pipeline_id:{pipeline_id}, namespace:{namespace}")
-    client.run_pipeline(
-        experiment_id=experiment_id,
-        job_name=job_name,
-        # Read this as a yaml, people seam to prefer that to json.
-        params=pipeline_params,
-        pipeline_id=pipeline_id)
-    logging.info(
-        "Successfully started the pipeline, head over to kubeflow to check it out")
-
-
+    
+    if recurring_flag == True :
+        client.create_recurring_run(
+            experiment_id=experiment_id,
+            job_name=job_name,
+            params=pipeline_params,
+            pipeline_id=pipeline_id,
+            cron_expression=cron_expression)
+        logging.info(
+            "Successfully started the recurring pipeline, head over to kubeflow to check it out")
+    else :
+        
+        client.run_pipeline(
+            experiment_id=experiment_id,
+            job_name=job_name,
+            params=pipeline_params,
+            pipeline_id=pipeline_id)
+        logging.info(
+            "Successfully started the pipeline, head over to kubeflow to check it out")
 
 def main():
 
     logging.info("Started the process to compile and upload the pipeline to kubeflow.")
     logging.info("Authenticating") 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["INPUT_GOOGLE_APPLICATION_CREDENTIALS"]
-
-    print (os.system("ls /tmp/"))
 
     print (os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
 
@@ -215,7 +223,10 @@ def main():
         run_pipeline(pipeline_name=pipeline_name,
                      pipeline_id=pipeline_id,
                      client=client,
-                     pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"])
+                     pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"],
+                     os.environ['INPUT_RUN_RECURRING_PIPELINE'],
+                     os.environ['CRON_EXPRESSION'])
+        
     
 if __name__ == "__main__":
     main()
