@@ -213,6 +213,8 @@ def main():
 
     logging.info(os.getenv("INPUT_RUN_PIPELINE"))
     logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
+    logging.info(os.environ['INPUT_RUN_RECURRING_PIPELINE'])
+    logging.info(os.environ['INPUT_CRON_EXPRESSION'])
 
     if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
         logging.info("Started the process to run the pipeline on kubeflow.")
