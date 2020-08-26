@@ -139,7 +139,7 @@ def read_pipeline_params(pipeline_paramters_path: str) -> dict:
     return pipeline_params
 
 
-def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipeline_paramters_path: dict, recurring_flag :bool, cron_exp : str):
+def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipeline_paramters_path: dict, recurring_flag :bool = False, cron_exp : str = ''):
 
     
     experiment_id = find_experiment_id(
@@ -224,8 +224,8 @@ def main():
                      pipeline_id=pipeline_id,
                      client=client,
                      pipeline_paramters_path=os.environ["INPUT_PIPELINE_PARAMETERS_PATH"],
-                     os.environ['INPUT_RUN_RECURRING_PIPELINE'],
-                     os.environ['CRON_EXPRESSION'])
+                     recurring_flag = os.environ['INPUT_RUN_RECURRING_PIPELINE'],
+                     cron_exp = os.environ['CRON_EXPRESSION'])
         
     
 if __name__ == "__main__":
