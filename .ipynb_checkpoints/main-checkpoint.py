@@ -161,7 +161,7 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
     logging.info(
         f"experiment_id: {experiment_id}, job_name:{job_name}, pipeline_params:{pipeline_params}, pipeline_id:{pipeline_id}, namespace:{namespace}")
     
-    if recurring_flag == True :
+    if recurring_flag == "true" :
         client.create_recurring_run(
             experiment_id=experiment_id,
             job_name=job_name,
