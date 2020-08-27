@@ -65,6 +65,8 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: st
     client.upload_pipeline(
         pipeline_package_path=pipeline_name_zip,
         pipeline_name=pipeline_name)
+    
+    logging.info("the pipeline is uploaded")
     return client
 
 
@@ -160,6 +162,7 @@ def run_pipeline(client: kfp.Client, pipeline_name: str, pipeline_id: str, pipel
     pipeline_params = pipeline_params if pipeline_params != None else {}
     logging.info(
         f"experiment_id: {experiment_id}, job_name:{job_name}, pipeline_params:{pipeline_params}, pipeline_id:{pipeline_id}, namespace:{namespace}")
+    logging.info(cron_exp)
     
     if recurring_flag == "true" :
         client.create_recurring_run(
