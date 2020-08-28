@@ -6,7 +6,8 @@
 Setup Github Secrets for the following :-
 
 GKE_EMAIL  - GCP service account email \
-GKE_KEY - GCP service account credentials in base64 encoded format (example:- copy the output of 
+GKE_KEY - GCP service account credentials in base64 encoded format 
+example:- copy the output of 
 ``` bash
 cat path-to-key.json | base64
 ```
