@@ -70,16 +70,16 @@ jobs:
 ### Mandatory inputs for submitting kubeflow pipeline
 
 
-KUBEFLOW_URL: The URL to your kubeflow deployment
-ENCODED_GOOGLE_APPLICATION_CREDENTIALS: Service account with access to kubeflow and rights to deploy, see here for example, the credentials needs to be bas64 encoded
-GOOGLE_APPLICATION_CREDENTIALS: The path to where you like to store the secrets, which needs to be decoded from GKE_KEY
-PIPELINE_CODE_PATH: The full path to the python file containing the pipeline
-PIPELINE_FUNCTION_NAME: The name of the pipeline function the PIPELINE_CODE_PATH file
-PIPELINE_PARAMETERS_PATH: The pipeline parameters
-EXPERIMENT_NAME: The name of the kubeflow experiment within which the pipeline should run
-RUN_PIPELINE: If you like to also run the pipeline set "True"
-VERSION_GITHUB_SHA: If the pipeline containers are versioned with the github hash
-RUN_RECURRING_PIPELINE: If you also like to run recurring pipline runs set "True"
+KUBEFLOW_URL: The URL to your kubeflow deployment \
+ENCODED_GOOGLE_APPLICATION_CREDENTIALS: Service account with access to kubeflow and rights to deploy, see here for example, the credentials needs to be bas64 encoded \
+GOOGLE_APPLICATION_CREDENTIALS: The path to where you like to store the secrets, which needs to be decoded from GKE_KEY \
+PIPELINE_CODE_PATH: The full path to the python file containing the pipeline \
+PIPELINE_FUNCTION_NAME: The name of the pipeline function the PIPELINE_CODE_PATH file \
+PIPELINE_PARAMETERS_PATH: The pipeline parameters \
+EXPERIMENT_NAME: The name of the kubeflow experiment within which the pipeline should run \
+RUN_PIPELINE: If you like to also run the pipeline set "True" \
+VERSION_GITHUB_SHA: If the pipeline containers are versioned with the github hash \
+RUN_RECURRING_PIPELINE: If you also like to run recurring pipline runs set "True" \
 CRON_EXPRESSION: if you would like to set cron for recurring runs (RUN_RECURRING_PIPELINE should always be "True" to use this . CRON expression can be generated using this link https://www.freeformatter.com/cron-expression-generator-quartz.html --> use "Seconds	Minutes	Hours	Day Of Month	Month	Day Of Week" part of the CRON string only
 
 
