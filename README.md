@@ -10,7 +10,9 @@ GKE_KEY - GCP service account credentials in base64 encoded format (example:- co
 GKE_PROJECT - Google Project where the Kubernetes Cluster is defined(can be located on GCP dashboard inside "Project Info" --> "Project Name" should be used) \
 KUBEFLOW_URL - Kubeflow URL for pipeline deployment (Kubeflow deployment without IAP) \
 
-Example Workflow :- 
+###Example Workflow :- 
+
+```yaml
 
 name: Compile, Deploy and Run versioned DIEN pipeline on Kubeflow 
 on: [push]
@@ -20,11 +22,13 @@ env:
 
 jobs:
   build:
+  
     runs-on: ubuntu-latest
     steps:
+    
     - name: checkout files in repo
       uses: actions/checkout@master
-
+      
     - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
       with:
         version: '270.0.0'
@@ -65,7 +69,7 @@ jobs:
         VERSION_GITHUB_SHA: True
         RUN_RECURRING_PIPELINE: True
         CRON_EXPRESSION: "<second minute hour day month day_of_the_week[example :-0 0 1 ? * SUN]>"
-        
+ ```      
         
 ### Mandatory inputs for submitting kubeflow pipeline
 
