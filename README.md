@@ -81,7 +81,7 @@ jobs:
 
 KUBEFLOW_URL: The URL to your kubeflow deployment \
 ENCODED_GOOGLE_APPLICATION_CREDENTIALS: Service account with access to kubeflow and rights to deploy, see here for example, the credentials needs to be bas64 encoded \
-GOOGLE_APPLICATION_CREDENTIALS: The path to where you like to store the secrets, which needs to be decoded from GKE_KEY \
+GOOGLE_APPLICATION_CREDENTIALS: The path to where you like to store the secrets, which needs to be decoded from GKE_KEY (optional parameter)\
 PIPELINE_CODE_PATH: The full path to the python file containing the pipeline \
 PIPELINE_FUNCTION_NAME: The name of the pipeline function the PIPELINE_CODE_PATH file \
 PIPELINE_PARAMETERS_PATH: The pipeline parameters \
