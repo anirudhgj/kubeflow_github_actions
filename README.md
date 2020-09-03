@@ -1,7 +1,9 @@
 # kubeflow_github_actions
 
 
-### HOW TO USE THIS GITHUB ACTIONS (Similar to NikeNano/Kubefllow-github-actions repo)
+### HOW TO USE THIS GITHUB ACTIONS (Similar to NikeNano/Kubefllow-github-actions repo but not using Standalone Kubeflow)
+
+NOTE :- This github Actions uses AI platform Pipelines currently
 
 Setup Github Secrets for the following :-
 
