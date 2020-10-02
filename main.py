@@ -186,7 +186,7 @@ def run_pipeline_func(client: kfp.Client,
         ).to_dict()["id"]
     except ValueError:
         experiment_id = client.create_experiment(
-            experiment_name=experiment_name
+            name=experiment_name
         ).to_dict()["id"]
 
     namespace = os.getenv("INPUT_PIPELINE_NAMESPACE") if not str.isspace(
