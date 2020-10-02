@@ -1,4 +1,4 @@
-name: Manage Kubeflow Pipelines on GCP. 
+name: Manage Kubeflow Pipelines on GCP.
 description: Build, deploy and run a Kubeflow Pipeline on Google Cloud Platform.
 author: Anirudh G J
 inputs:
@@ -9,46 +9,45 @@ inputs:
     description: Flag for running recurring pipelines
     required: true
   KUBEFLOW_URL:
-    description: The endpoint where your Kubeflow UI is running. 
+    description: The endpoint where your Kubeflow UI is running.
     required: true
   CLIENT_ID:
     description: The IAP client id, which was specified when the kubeflow deployment where setup using IAP.
-    require: False
+    required: False
   PIPELINE_CODE_PATH:
     description: The full path name including the filename of the python file that describes the pipeline you want to run on Kubeflow.  This should be relative to the root of the GitHub repository where the Action is triggered.
-    require: true
+    required: true
   PIPELINE_PARAMETERS_PATH:
     description: Full path name including the filename of the parameters yaml file that contains the parameters for the kublefow pipeline
-    require: true
+    required: true
   PIPELINE_FUNCTION_NAME:
     description: The name of the pipeline, this name will be the name of the pipeline in the Kubeflow UI.
-    require: true
+    required: true
   ENCODED_GOOGLE_APPLICATION_CREDENTIALS:
     description: The base64 encoded google credentials
     required: true
   GOOGLE_APPLICATION_CREDENTIALS:
     description: The path to the decoded google credentials
     required: true
-  EXPERIMENT_NAME: 
+  EXPERIMENT_NAME:
     description: The name of the experiment name within which the kubeflow experiment should run
     required: false
-  PIPELINE_NAMESPACE: 
+  PIPELINE_NAMESPACE:
     description: The namespace in which the pipeline should run
     required: false
-  RUN_PIPELINE: 
+  RUN_PIPELINE:
     description: Should github action also trigger the pipeline
     required: false
-  VERSION_GITHUB_SHA: 
-    description: Should github action also trigger the pipeline
+  VERSION_GITHUB_SHA:
+    description: Flag for versioning with github sha
     required: false
 
-    
 outputs:
   WORKFLOW_URL:
     description: URL that is a link to pipeline in Kubeflow
 branding:
-  color: 'purple'
-  icon: 'upload-cloud'
+  color: "purple"
+  icon: "upload-cloud"
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
