@@ -1,12 +1,11 @@
 import os
-import yaml
-import kfp
-import kfp.compiler as compiler
-import click
-import importlib.util
-import logging
 import sys
 import json
+import yaml
+import logging
+import kfp
+import kfp.compiler as compiler
+import importlib.util
 from datetime import datetime
 
 
@@ -52,53 +51,26 @@ def pipeline_compile(pipeline_function: object) -> str:
     return pipeline_name_zip
 
 
-def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, kubeflow_url: str):
+def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, github_sha: str, client):
     """ Function to upload pipeline to kubeflow.
 
     Arguments:
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
-    client = kfp.Client(host=kubeflow_url)
 
-    client.upload_pipeline(
+    pipeline_id = client.get_pipeline_id(pipeline_name)
+    if pipeline_id is None:
+        pipeline_id = client.upload_pipeline(
+            pipeline_package_path=pipeline_name_zip,
+            pipeline_name=pipeline_name).to_dict()["id"]
+
+    client.upload_pipeline_version(
         pipeline_package_path=pipeline_name_zip,
-        pipeline_name=pipeline_name)
+        pipeline_version_name=github_sha,
+        pipeline_id=pipeline_id)
 
-    logging.info("the pipeline is uploaded")
-    return client
-
-
-def find_pipeline_id(pipeline_name: str, client: kfp.Client, page_size: str = 100, page_token: str = "") -> str:
-    """ Function to find the pipeline id of a pipeline.
-
-    Arguments:
-        pipeline_name {str} -- The name of the pipeline of interest
-        client {kfp.Client} -- The kfp client
-        page_size {str} -- The number of pipelines to collect a each API request
-
-    Keyword Arguments:
-        page_token {str} -- The page token to use for the API request (default: {" "})
-
-    Returns:
-        [type] -- The pipeline id. If None no match
-    """
-    while True:
-        pipelines = client.list_pipelines(
-            page_size=page_size, page_token=page_token)
-        for pipeline in pipelines.pipelines:
-            if pipeline.name == pipeline_name:
-                logging.info(f"The pipeline id is: {pipeline.id}")
-                return pipeline.id
-
-        # Start need to know where to do next itteration from
-        page_token = pipelines.next_page_token
-
-        # If no next tooken break
-        if not page_token:
-            logging.info(
-                f"Could not find the pipeline, is the name: {pipeline_name} correct?")
-            break
+    return pipeline_id
 
 
 def read_pipeline_params(pipeline_paramters_path: str) -> dict:
@@ -122,6 +94,10 @@ def run_pipeline_func(client: kfp.Client,
                       pipeline_paramters_path: dict,
                       recurring_flag: bool = False,
                       cron_exp: str = ''):
+    pipeline_params = read_pipeline_params(
+        pipeline_paramters_path=pipeline_paramters_path)
+    pipeline_params = pipeline_params if pipeline_params is not None else {}
+
     experiment_id = None
     try:
         experiment_id = client.get_experiment(
@@ -132,26 +108,19 @@ def run_pipeline_func(client: kfp.Client,
         experiment_id = client.get_experiment(
             experiment_name=os.environ["INPUT_EXPERIMENT_NAME"]
         ).to_dict()["id"]
-    logging.info(f"The expriment id is: {experiment_id}")
 
     namespace = os.getenv("INPUT_PIPELINE_NAMESPACE") if not str.isspace(
         os.getenv("INPUT_PIPELINE_NAMESPACE")) else None
-    if namespace is not None:
-        logging.info(f"The namespace that will be used is: {namespace}")
 
-    job_name = pipeline_name + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    logging.info(f"The job name is: {job_name}")
-
-    pipeline_params = read_pipeline_params(
-        pipeline_paramters_path=pipeline_paramters_path)
-    pipeline_params = pipeline_params if pipeline_params is not None else {}
+    job_name = 'Run {} on {}'.format(pipeline_name,
+                                     datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
 
     logging.info(f"experiment_id: {experiment_id}, \
                  job_name: {job_name}, \
                  pipeline_params: {pipeline_params}, \
                  pipeline_id: {pipeline_id}, \
-                 namespace: {namespace}")
-    logging.info(cron_exp)
+                 namespace: {namespace}, \
+                 cron_exp: {cron_exp}")
 
     if recurring_flag == "true":
         client.create_recurring_run(experiment_id=experiment_id,
@@ -183,8 +152,8 @@ def main():
                                                                                           ga_credentials,
                                                                                           sa_details['project_id']))
 
-    pipeline_function_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME']
-    pipeline_function = load_function(pipeline_function_name=pipeline_function_name,
+    pipeline_name = os.environ['INPUT_PIPELINE_FUNCTION_NAME']
+    pipeline_function = load_function(pipeline_function_name=pipeline_name,
                                       full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
 
     github_sha = os.getenv("GITHUB_SHA")
@@ -192,23 +161,15 @@ def main():
         logging.info(f"Versioned pipeline components with : {github_sha}")
         pipeline_function = pipeline_function(github_sha=github_sha)
 
+    client = kfp.Client(host=os.environ['INPUT_KUBEFLOW_URL'])
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
-    pipeline_name = f"{pipeline_function_name}_{github_sha}"
+    pipeline_id = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
+                                  pipeline_name=pipeline_name,
+                                  github_sha=github_sha,
+                                  client=client)
 
-    client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
-                             pipeline_name=pipeline_name,
-                             kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
-
-    logging.info(os.getenv("INPUT_RUN_PIPELINE"))
-    logging.info(os.environ["INPUT_EXPERIMENT_NAME"])
-    logging.info(os.environ['INPUT_RUN_RECURRING_PIPELINE'])
-    logging.info(os.environ['INPUT_CRON_EXPRESSION'])
-
-    if os.getenv("INPUT_RUN_PIPELINE") == "true" and os.environ["INPUT_EXPERIMENT_NAME"]:
+    if os.getenv("INPUT_RUN_PIPELINE") == "true":
         logging.info("Started the process to run the pipeline on kubeflow.")
-
-        pipeline_id = find_pipeline_id(pipeline_name=pipeline_name,
-                                       client=client)
         run_pipeline_func(pipeline_name=pipeline_name,
                           pipeline_id=pipeline_id,
                           client=client,
