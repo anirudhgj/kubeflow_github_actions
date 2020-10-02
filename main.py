@@ -7,9 +7,89 @@ import kfp
 import kfp.compiler as compiler
 import importlib.util
 from datetime import datetime
+from typing import Optional
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+# TODO: Remove after version up to v1.1
+_FILTER_OPERATIONS = {"UNKNOWN": 0,
+                      "EQUALS": 1,
+                      "NOT_EQUALS": 2,
+                      "GREATER_THAN": 3,
+                      "GREATER_THAN_EQUALS": 5,
+                      "LESS_THAN": 6,
+                      "LESS_THAN_EQUALS": 7}
+
+
+# TODO: Remove after version up to v1.1
+def get_pipeline_id(self, name):
+    """Find the id of a pipeline by name.
+
+    Args:
+        name: Pipeline name.
+
+    Returns:
+        Returns the pipeline id if a pipeline with the name exists.
+    """
+    pipeline_filter = json.dumps({
+        "predicates": [
+            {
+                "op": _FILTER_OPERATIONS["EQUALS"],
+                "key": "name",
+                "stringValue": name,
+            }
+        ]
+    })
+    result = self._pipelines_api.list_pipelines(filter=pipeline_filter)
+    if result.pipelines is None:
+        return None
+    if len(result.pipelines) == 1:
+        return result.pipelines[0].id
+    elif len(result.pipelines) > 1:
+        raise ValueError(
+            "Multiple pipelines with the name: {} found, the name needs to be unique".format(name))
+    return None
+
+
+# TODO: Remove after version up to v1.1
+def upload_pipeline_version(
+        self,
+        pipeline_package_path,
+        pipeline_version_name: str,
+        pipeline_id: Optional[str] = None,
+        pipeline_name: Optional[str] = None):
+    """Uploads a new version of the pipeline to the Kubeflow Pipelines cluster.
+    Args:
+        pipeline_package_path: Local path to the pipeline package.
+        pipeline_version_name:  Name of the pipeline version to be shown in the UI.
+        pipeline_id: Optional. Id of the pipeline.
+        pipeline_name: Optional. Name of the pipeline.
+    Returns:
+        Server response object containing pipleine id and other information.
+    Throws:
+        ValueError when none or both of pipeline_id or pipeline_name are specified
+        Exception if pipeline id is not found.
+    """
+
+    if all([pipeline_id, pipeline_name]) or not any([pipeline_id, pipeline_name]):
+        raise ValueError('Either pipeline_id or pipeline_name is required')
+
+    if pipeline_name:
+        pipeline_id = self.get_pipeline_id(pipeline_name)
+
+    response = self._upload_api.upload_pipeline_version(
+        pipeline_package_path,
+        name=pipeline_version_name,
+        pipelineid=pipeline_id
+    )
+
+    if self._is_ipython():
+        import IPython
+        html = 'Pipeline link <a href=%s/#/pipelines/details/%s>here</a>' % (
+            self._get_url_prefix(), response.id)
+        IPython.display.display(IPython.display.HTML(html))
+    return response
 
 
 def load_function(pipeline_function_name: str, full_path_to_pipeline: str) -> object:
@@ -58,13 +138,16 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, github_sha: str,
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
-
+    # TODO: Remove after version up to v1.1
+    client.get_pipeline_id = get_pipeline_id
     pipeline_id = client.get_pipeline_id(pipeline_name)
     if pipeline_id is None:
         pipeline_id = client.upload_pipeline(
             pipeline_package_path=pipeline_name_zip,
             pipeline_name=pipeline_name).to_dict()["id"]
 
+    # TODO: Remove after version up to v1.1
+    client.upload_pipeline_version = upload_pipeline_version
     client.upload_pipeline_version(
         pipeline_package_path=pipeline_name_zip,
         pipeline_version_name=github_sha,
