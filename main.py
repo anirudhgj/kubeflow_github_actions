@@ -138,16 +138,12 @@ def upload_pipeline(pipeline_name_zip: str, pipeline_name: str, github_sha: str,
         pipeline_name_zip {str} -- The name of the compiled pipeline.ArithmeticError
         pipeline_name {str} -- The name of the pipeline function. This will be the name in the kubeflow UI. 
     """
-    # TODO: Remove after version up to v1.1
-    client.get_pipeline_id = get_pipeline_id
     pipeline_id = client.get_pipeline_id(pipeline_name)
     if pipeline_id is None:
         pipeline_id = client.upload_pipeline(
             pipeline_package_path=pipeline_name_zip,
             pipeline_name=pipeline_name).to_dict()["id"]
 
-    # TODO: Remove after version up to v1.1
-    client.upload_pipeline_version = upload_pipeline_version
     client.upload_pipeline_version(
         pipeline_package_path=pipeline_name_zip,
         pipeline_version_name=github_sha,
@@ -243,6 +239,10 @@ def main():
     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
         logging.info(f"Versioned pipeline components with : {github_sha}")
         pipeline_function = pipeline_function(github_sha=github_sha)
+
+    # TODO: Remove after version up to v1.1
+    kfp.Client.get_pipeline_id = get_pipeline_id
+    kfp.Client.upload_pipeline_version = upload_pipeline_version
 
     client = kfp.Client(host=os.environ['INPUT_KUBEFLOW_URL'])
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
