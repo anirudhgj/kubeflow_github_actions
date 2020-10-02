@@ -178,21 +178,22 @@ def run_pipeline_func(client: kfp.Client,
     pipeline_params = pipeline_params if pipeline_params is not None else {}
 
     experiment_id = None
+    experiment_name = "{}-{}".format(pipeline_name,
+                                     os.environ["INPUT_EXPERIMENT_NAME"])
     try:
         experiment_id = client.get_experiment(
-            experiment_name=os.environ["INPUT_EXPERIMENT_NAME"]
+            experiment_name=experiment_name
         ).to_dict()["id"]
     except ValueError:
-        client.create_experiment(os.environ["INPUT_EXPERIMENT_NAME"])
-        experiment_id = client.get_experiment(
-            experiment_name=os.environ["INPUT_EXPERIMENT_NAME"]
+        experiment_id = client.create_experiment(
+            experiment_name=experiment_name
         ).to_dict()["id"]
 
     namespace = os.getenv("INPUT_PIPELINE_NAMESPACE") if not str.isspace(
         os.getenv("INPUT_PIPELINE_NAMESPACE")) else None
 
     job_name = 'Run {} on {}'.format(pipeline_name,
-                                     datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+                                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     logging.info(f"experiment_id: {experiment_id}, \
                  job_name: {job_name}, \
