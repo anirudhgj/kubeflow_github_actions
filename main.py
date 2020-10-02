@@ -101,34 +101,6 @@ def find_pipeline_id(pipeline_name: str, client: kfp.Client, page_size: str = 10
             break
 
 
-def find_experiment_id(experiment_name: str, client: kfp.Client, page_size: int = 100, page_token: str = "") -> str:
-    """Function to return the experiment id
-
-    Arguments:
-        experiment_name {str} -- The experiment name
-        client {kfp.Client} -- The kfp client
-
-    Returns:
-        str -- The experiment id
-    """
-    while True:
-        experiments = client.list_experiments(page_size=page_size,
-                                              page_token=page_token)
-        for experiments in experiments.experiments:
-            if experiments.name == experiment_name:
-                logging.info("Succesfully collected the experiment id")
-                return experiments.id
-
-        # Start need to know where to do next itteration from
-        page_token = experiments.next_page_token
-
-        # If no next tooken break
-        if not page_token:
-            logging.info(
-                f"Could not find the pipeline id, is the experiment name: {experiment_name} correct? ")
-            break
-
-
 def read_pipeline_params(pipeline_paramters_path: str) -> dict:
     # [TODO] add docstring here
     pipeline_params = {}
@@ -150,17 +122,21 @@ def run_pipeline_func(client: kfp.Client,
                       pipeline_paramters_path: dict,
                       recurring_flag: bool = False,
                       cron_exp: str = ''):
-
-    experiment_id = find_experiment_id(experiment_name='Default',
-                                       client=client)
-    if not experiment_id:
-        raise ValueError("Failed to find experiment with the name: {}".format(
-            os.environ["INPUT_EXPERIMENT_NAME"]))
+    experiment_id = None
+    try:
+        experiment_id = client.get_experiment(
+            experiment_name=os.environ["INPUT_EXPERIMENT_NAME"]
+        ).to_dict()["id"]
+    except ValueError:
+        client.create_experiment(os.environ["INPUT_EXPERIMENT_NAME"])
+        experiment_id = client.get_experiment(
+            experiment_name=os.environ["INPUT_EXPERIMENT_NAME"]
+        ).to_dict()["id"]
     logging.info(f"The expriment id is: {experiment_id}")
 
-    namespace = None
-    if (os.getenv("INPUT_PIPELINE_NAMESPACE") is not None) and (not str.isspace(os.getenv("INPUT_PIPELINE_NAMESPACE"))) and os.getenv("INPUT_PIPELINE_NAMESPACE"):
-        namespace = os.environ["INPUT_PIPELINE_NAMESPACE"]
+    namespace = os.getenv("INPUT_PIPELINE_NAMESPACE") if not str.isspace(
+        os.getenv("INPUT_PIPELINE_NAMESPACE")) else None
+    if namespace is not None:
         logging.info(f"The namespace that will be used is: {namespace}")
 
     job_name = pipeline_name + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
@@ -211,13 +187,14 @@ def main():
     pipeline_function = load_function(pipeline_function_name=pipeline_function_name,
                                       full_path_to_pipeline=os.environ['INPUT_PIPELINE_CODE_PATH'])
 
-    github_sha = os.getenv["GITHUB_SHA"]
+    github_sha = os.getenv("GITHUB_SHA")
     if os.environ["INPUT_VERSION_GITHUB_SHA"] == "true":
         logging.info(f"Versioned pipeline components with : {github_sha}")
         pipeline_function = pipeline_function(github_sha=github_sha)
 
     pipeline_name_zip = pipeline_compile(pipeline_function=pipeline_function)
     pipeline_name = f"{pipeline_function_name}_{github_sha}"
+
     client = upload_pipeline(pipeline_name_zip=pipeline_name_zip,
                              pipeline_name=pipeline_name,
                              kubeflow_url=os.environ['INPUT_KUBEFLOW_URL'])
