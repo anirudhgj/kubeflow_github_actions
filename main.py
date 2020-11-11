@@ -12,7 +12,7 @@ from typing import Optional
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-# TODO: Remove after version up to v1.1
+# TODO: Remove after version up to kfp=v1.1
 _FILTER_OPERATIONS = {"UNKNOWN": 0,
                       "EQUALS": 1,
                       "NOT_EQUALS": 2,
@@ -22,7 +22,7 @@ _FILTER_OPERATIONS = {"UNKNOWN": 0,
                       "LESS_THAN_EQUALS": 7}
 
 
-# TODO: Remove after version up to v1.1
+# TODO: Remove after version up to kfp=v1.1
 def get_pipeline_id(self, name):
     """Find the id of a pipeline by name.
 
@@ -52,7 +52,7 @@ def get_pipeline_id(self, name):
     return None
 
 
-# TODO: Remove after version up to v1.1
+# TODO: Remove after version up to kfp=v1.1
 def upload_pipeline_version(
         self,
         pipeline_package_path,
@@ -241,7 +241,7 @@ def main():
         logging.info(f"Versioned pipeline components with : {github_sha}")
         pipeline_function = pipeline_function(github_sha=github_sha)
 
-    # TODO: Remove after version up to v1.1
+    # TODO: Remove after version up to kfp=v1.1
     kfp.Client.get_pipeline_id = get_pipeline_id
     kfp.Client.upload_pipeline_version = upload_pipeline_version
 

@@ -2,7 +2,7 @@
 
 
 ### How to Use This Github Actions 
-This workflow is similar to [NikeNano/Kubefllow-github-actions](https://github.com/NikeNano/kubeflow-github-action) repo but not using standalone Kubeflow built on GKE.
+This workflow is similar to and strongly inspired by [NikeNano/Kubefllow-github-actions](https://github.com/NikeNano/kubeflow-github-action) repo but not using standalone Kubeflow built on GKE.
 
 NOTE :- This github actions uses AI platform Pipelines currently.
 
